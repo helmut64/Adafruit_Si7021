@@ -22,6 +22,9 @@
 #include <Wire.h>
 #include <Adafruit_Si7021.h>
 
+#ifndef UNUSED
+ #define UNUSED(x) (void)(x)
+#endif
 
 /**************************************************************************/
 
@@ -49,8 +52,11 @@ float Adafruit_Si7021::readHumidity(void) {
   Wire.beginTransmission(_i2caddr);
   Wire.write(SI7021_MEASRH_NOHOLD_CMD);
   uint8_t err = Wire.endTransmission(false);
+//  Serial.print("Err: ");
+//  Serial.println(err);
+ 
 #ifdef ARDUINO_ARCH_ESP32
-  if(err != I2C_ERROR_CONTINUE) //ESP32 has to queue ReSTART operations.
+  if(err && err != I2C_ERROR_CONTINUE) //ESP32 has to queue ReSTART operations.
 #else
   if (err != 0)
 #endif
@@ -61,6 +67,7 @@ float Adafruit_Si7021::readHumidity(void) {
     if (Wire.requestFrom(_i2caddr, 3) == 3) {
       uint16_t hum = Wire.read() << 8 | Wire.read();
       uint8_t chxsum = Wire.read();
+	  UNUSED(chxsum);
 
       float humidity = hum;
       humidity *= 125;
@@ -80,7 +87,7 @@ float Adafruit_Si7021::readTemperature(void) {
   uint8_t err = Wire.endTransmission(false);
 
 #ifdef ARDUINO_ARCH_ESP32
-  if (err != I2C_ERROR_CONTINUE) //ESP32 has to queue ReSTART operations.
+  if(err && err != I2C_ERROR_CONTINUE) //ESP32 has to queue ReSTART operations.
 #else
   if(err != 0)
 #endif
@@ -91,6 +98,7 @@ float Adafruit_Si7021::readTemperature(void) {
     if (Wire.requestFrom(_i2caddr, 3) == 3) {
       uint16_t temp = Wire.read() << 8 | Wire.read();
       uint8_t chxsum = Wire.read();
+	  UNUSED(chxsum);
 
       float temperature = temp;
       temperature *= 175.72;
